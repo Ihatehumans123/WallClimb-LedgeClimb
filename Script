@@ -1,0 +1,276 @@
+repeat task.wait() until game.Players.LocalPlayer.Character --- waiting until we get the character or something
+local bg
+local bv --- i am too lazy to change the name
+local attachment
+local onwall = false
+local plr = game.Players.LocalPlayer
+local char = plr.Character
+local raycastparams = RaycastParams.new()
+local position
+local normal 
+local ledgegrabbing = false
+
+local xaxis = {
+	["left"] = 0,
+	["right"] = 0 --- for moving
+
+}
+local yaxis = {
+	["up"] = 0,
+	["down"] = 0
+
+}
+
+raycastparams.FilterDescendantsInstances = game.Workspace.Walls:GetChildren()
+raycastparams.FilterType = Enum.RaycastFilterType.Whitelist
+local uis = game:GetService("UserInputService") --- to get the input
+
+local function movement(char:Model,raycast)
+	if onwall then
+		edgedirectionchangercheckerorsomething(char,raycast)
+		if bg and bv then
+			
+			local velocity:LinearVelocity = bv
+			local x = xaxis["right"] - xaxis["left"]
+	
+			local y = yaxis["up"] - yaxis["down"]
+
+
+			bv.VectorVelocity = Vector3.new(x* 20,y * 20,0)
+		end
+	end
+end
+function edgedirectionchangercheckerorsomething(char:Model,raycast)
+	if onwall then
+		if char.PrimaryPart.Position.Y > raycast.Instance.Position.Y + raycast.Instance.Size.Y/2 then
+			onwall	= false
+			char.PrimaryPart.CFrame = char.PrimaryPart.CFrame * CFrame.new(0,5,0)
+
+			char.Humanoid.AutoRotate = true
+			char.Humanoid.PlatformStand = false
+			bv.Enabled = false
+			bg.Enabled = false
+		end
+		if char.PrimaryPart.Position.Y < 2 then
+			onwall	= false
+			char.Humanoid.AutoRotate = true
+			char.Humanoid.PlatformStand = false
+			bv.Enabled = false
+			bg.Enabled = false
+		end
+		local rightleftcheck = xaxis["right"] > xaxis["left"]
+
+		local origin = char.PrimaryPart.Position + char.PrimaryPart.CFrame.LookVector
+		if rightleftcheck == true then
+ 
+			local sidecast = game.Workspace:Raycast(origin,  -char.PrimaryPart.CFrame.RightVector * 2  ,raycastparams)
+
+
+			if sidecast then
+				
+				bg.CFrame = CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
+				char.PrimaryPart.CFrame =  CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
+				normal = sidecast.Normal
+				position = sidecast.Position
+			end
+
+		else
+
+			local sidecast = game.Workspace:Raycast(origin, char.PrimaryPart.CFrame.RightVector * 2,raycastparams)
+			if sidecast then
+			
+				bg.CFrame = CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
+				char.PrimaryPart.CFrame =  CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
+				normal = sidecast.Normal
+				position = sidecast.Position
+
+			end
+		end
+	end
+end
+uis.InputBegan:Connect(function(i,g)	
+	if g then return end
+	if i.KeyCode == Enum.KeyCode.LeftControl then --- checking if player clicked leftcontrol
+		if not onwall and not ledgegrabbing then
+			local raycast = game.Workspace:Raycast(char.PrimaryPart.Position,char.PrimaryPart.CFrame.LookVector * 1.2,raycastparams) --- raycasting
+			if raycast then
+				if raycast.Instance:IsA("BasePart") then --- checking if the thing the raycast is hitting is a part
+					
+					onwall = true
+					if not attachment then --- adding attachment if no attachment
+						attachment = Instance.new("Attachment",plr.Character.PrimaryPart)
+
+					end
+					if not bg then
+						bg = Instance.new("AlignOrientation",plr.Character.HumanoidRootPart) --- creating a alein orientation
+
+						bg.Mode	= Enum.OrientationAlignmentMode.OneAttachment
+						bg.RigidityEnabled	= true
+						bg.Attachment0 = attachment
+
+
+					end
+					position = raycast.Position
+					normal = raycast.Normal
+					if not bv then
+						bv = Instance.new("LinearVelocity",plr.Character.HumanoidRootPart) --- the mover constraint or velocity
+
+						bv.MaxForce						= math.huge
+						bv.Attachment0					= attachment
+						bv.RelativeTo						= Enum.ActuatorRelativeTo.Attachment0
+						bv.VectorVelocity					= Vector3.new()
+					end
+					bv.Enabled = true
+					bg.Enabled = true
+					local humanoid:Humanoid = plr.Character.Humanoid
+					bg.CFrame = CFrame.lookAt(position + (normal/2) ,position)
+					humanoid.AutoRotate = false --- to stop the character from moving
+					humanoid.PlatformStand = true
+					local courtaine =	coroutine.create(function() --- couratine so the other stuff will work 
+						repeat
+							bg.CFrame = CFrame.lookAt(position + (normal/2),position)
+							movement(char,raycast)
+							task.wait()
+
+						
+						until onwall == false
+
+
+					end)
+					coroutine.resume(courtaine)
+
+
+				end
+			end
+		elseif onwall and not ledgegrabbing then
+			onwall	= false
+	
+
+			char.Humanoid.AutoRotate = true
+			char.Humanoid.PlatformStand = false
+			bv.Enabled = false
+			bg.Enabled = false
+		end
+
+	elseif i.KeyCode == Enum.KeyCode.A then  --- i am sorry for anyone reading this :pray:
+		if onwall then
+			xaxis["left"] = 1
+		end
+	elseif i.KeyCode == Enum.KeyCode.D then
+		if onwall then
+			xaxis["right"] = 1
+		end
+
+	elseif i.KeyCode == Enum.KeyCode.W then
+		if onwall then
+			yaxis["up"] = 1
+
+		end
+	elseif i.KeyCode == Enum.KeyCode.S then
+		if onwall then
+			yaxis["down"] = 1
+		end
+
+	end
+
+
+end)
+
+uis.InputEnded:Connect(function(i,g) --- ganna reset the values when input ends 
+	if i.KeyCode == Enum.KeyCode.A then
+
+		xaxis["left"] = 0
+
+	elseif i.KeyCode == Enum.KeyCode.D then
+
+		xaxis["right"] = 0
+
+
+	elseif i.KeyCode == Enum.KeyCode.W then
+
+		yaxis["up"] = 0
+
+
+	elseif i.KeyCode == Enum.KeyCode.S then
+
+		yaxis["down"] = 0
+
+end
+end)
+--- ledgegrab script
+uis.InputBegan:Connect(function(i,g)
+	if g then return end
+	if i.KeyCode == Enum.KeyCode.Space then
+		local humanoid:Humanoid = plr.Character.Humanoid
+		if humanoid:GetState() == Enum.HumanoidStateType.Freefall or  humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+			
+		
+		if ledgegrabbing == false and onwall == false then
+		
+			 local raycast = game.Workspace:Raycast(plr.Character.HumanoidRootPart.Position,plr.Character.HumanoidRootPart.CFrame.LookVector * 3,raycastparams)
+			 if raycast then
+					
+					
+					if ( plr.Character.Head.Position.Y - (raycast.Instance.Position.Y + raycast.Instance.Size.Y /2)) < 3 then
+						
+						ledgegrabbing = true
+						if not attachment then --- adding attachment if no attachment
+							attachment = Instance.new("Attachment",plr.Character.PrimaryPart)
+
+						end
+						if not bg then
+							bg = Instance.new("AlignOrientation",plr.Character.HumanoidRootPart) --- creating a alein orientation
+
+							bg.Mode	= Enum.OrientationAlignmentMode.OneAttachment
+							bg.RigidityEnabled	= true
+							bg.Attachment0 = attachment
+
+
+						end
+						if not bv then
+							bv = Instance.new("LinearVelocity",plr.Character.HumanoidRootPart) --- the mover constraint or velocity
+
+							bv.MaxForce						= math.huge
+							bv.Attachment0					= attachment
+							bv.RelativeTo						= Enum.ActuatorRelativeTo.Attachment0
+							bv.VectorVelocity					= Vector3.new()
+						end
+						humanoid.AutoRotate = false --- to stop the character from moving
+						humanoid.PlatformStand = true
+						bg.Enabled = true
+						bv.Enabled = true
+						plr.Character.PrimaryPart.CFrame = CFrame.lookAt(raycast.Position + (raycast.Normal/2),raycast.Position)
+						local courtaine =	coroutine.create(function() --- couratine so the other stuff will work 
+							repeat
+								bg.CFrame = CFrame.lookAt(raycast.Position + (raycast.Normal/2),raycast.Position)
+						
+								task.wait()
+
+
+							until ledgegrabbing == false
+
+
+						end)
+						coroutine.resume(courtaine)
+						
+					end
+			 end
+		
+		end
+		elseif ledgegrabbing and not onwall then
+			ledgegrabbing = false
+			
+			humanoid.AutoRotate = true --- to stop the character from rotating
+			humanoid.PlatformStand = false
+			bg.Enabled = false
+			bv.Enabled = false
+			char.PrimaryPart.CFrame = char.PrimaryPart.CFrame * CFrame.new(0,10,0)
+		end
+	end
+	
+end)
+
+
+
+
+
