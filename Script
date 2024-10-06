@@ -211,7 +211,7 @@ uis.InputBegan:Connect(function(i,g)
 			 if raycast then
 					
 					
-					if ( plr.Character.Head.Position.Y - (raycast.Instance.Position.Y + raycast.Instance.Size.Y /2)) < 3 then  --- checking how far is the player's head position from the heigh of the raycast hit part
+					if ( (raycast.Instance.Position.Y + raycast.Instance.Size.Y /2)- plr.Character.Head.Position.Y ) < 3 then  --- checking how far is the player's head position from the heigh of the raycast hit part
 						
 						ledgegrabbing = true
 						if not attachment then --- adding attachment if no attachment
