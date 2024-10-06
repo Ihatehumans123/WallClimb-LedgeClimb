@@ -42,7 +42,7 @@ local function movement(char:Model,raycast)
 end
 function edgedirectionchangercheckerorsomething(char:Model,raycast)
 	if onwall then
-		if char.PrimaryPart.Position.Y > raycast.Instance.Position.Y + raycast.Instance.Size.Y/2 then
+		if char.PrimaryPart.Position.Y > raycast.Instance.Position.Y + raycast.Instance.Size.Y/2 then --- checking if player is above the heigh of the part 
 			onwall	= false
 			char.PrimaryPart.CFrame = char.PrimaryPart.CFrame * CFrame.new(0,5,0)
 
@@ -51,26 +51,26 @@ function edgedirectionchangercheckerorsomething(char:Model,raycast)
 			bv.Enabled = false
 			bg.Enabled = false
 		end
-		if char.PrimaryPart.Position.Y < 2 then
+		if char.PrimaryPart.Position.Y < 2 then --- checking if player is at grouund 
 			onwall	= false
 			char.Humanoid.AutoRotate = true
 			char.Humanoid.PlatformStand = false
 			bv.Enabled = false
 			bg.Enabled = false
 		end
-		local rightleftcheck = xaxis["right"] > xaxis["left"]
+		local rightleftcheck = xaxis["right"] > xaxis["left"] --- checking if player is moving left or right
 
 		local origin = char.PrimaryPart.Position + char.PrimaryPart.CFrame.LookVector
 		if rightleftcheck == true then
  
-			local sidecast = game.Workspace:Raycast(origin,  -char.PrimaryPart.CFrame.RightVector * 2  ,raycastparams)
+			local sidecast = game.Workspace:Raycast(origin,  -char.PrimaryPart.CFrame.RightVector * 2  ,raycastparams) --- casting a raycast so i can turn around the edges
 
 
 			if sidecast then
 				
 				bg.CFrame = CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
 				char.PrimaryPart.CFrame =  CFrame.lookAt(sidecast.Position + (sidecast.Normal/2),sidecast.Position)
-				normal = sidecast.Normal
+				normal = sidecast.Normal --- changing it so the other stuff do not break
 				position = sidecast.Position
 			end
 
@@ -152,7 +152,7 @@ uis.InputBegan:Connect(function(i,g)
 			bg.Enabled = false
 		end
 
-	elseif i.KeyCode == Enum.KeyCode.A then  --- i am sorry for anyone reading this :pray:
+	elseif i.KeyCode == Enum.KeyCode.A then  --- i am sorry for anyone reading this :pray: this is for the movement i change the values for each input
 		if onwall then
 			xaxis["left"] = 1
 		end
@@ -211,7 +211,7 @@ uis.InputBegan:Connect(function(i,g)
 			 if raycast then
 					
 					
-					if ( plr.Character.Head.Position.Y - (raycast.Instance.Position.Y + raycast.Instance.Size.Y /2)) < 3 then
+					if ( plr.Character.Head.Position.Y - (raycast.Instance.Position.Y + raycast.Instance.Size.Y /2)) < 3 then  --- checking how far is the player's head position from the heigh of the raycast hit part
 						
 						ledgegrabbing = true
 						if not attachment then --- adding attachment if no attachment
@@ -230,10 +230,10 @@ uis.InputBegan:Connect(function(i,g)
 						if not bv then
 							bv = Instance.new("LinearVelocity",plr.Character.HumanoidRootPart) --- the mover constraint or velocity
 
-							bv.MaxForce						= math.huge
-							bv.Attachment0					= attachment
-							bv.RelativeTo						= Enum.ActuatorRelativeTo.Attachment0
-							bv.VectorVelocity					= Vector3.new()
+							bv.MaxForce	= math.huge
+							bv.Attachment0	= attachment
+							bv.RelativeTo	= Enum.ActuatorRelativeTo.Attachment0
+							bv.VectorVelocity	= Vector3.new()
 						end
 						humanoid.AutoRotate = false --- to stop the character from moving
 						humanoid.PlatformStand = true
