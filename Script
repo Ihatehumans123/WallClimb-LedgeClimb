@@ -50,6 +50,7 @@ function edgedirectionchangercheckerorsomething(char:Model,raycast)
 			char.Humanoid.PlatformStand = false
 			bv.Enabled = false
 			bg.Enabled = false
+			bv.VectorVelocity = Vector3.new()
 		end
 		if char.PrimaryPart.Position.Y < 2 then --- checking if player is at grouund 
 			onwall	= false
@@ -57,6 +58,7 @@ function edgedirectionchangercheckerorsomething(char:Model,raycast)
 			char.Humanoid.PlatformStand = false
 			bv.Enabled = false
 			bg.Enabled = false
+			bv.VectorVelocity = Vector3.new()
 		end
 		local rightleftcheck = xaxis["right"] > xaxis["left"] --- checking if player is moving left or right
 
@@ -235,10 +237,11 @@ uis.InputBegan:Connect(function(i,g)
 							bv.RelativeTo	= Enum.ActuatorRelativeTo.Attachment0
 							bv.VectorVelocity	= Vector3.new()
 						end
-						humanoid.AutoRotate = false --- to stop the character from moving
-						humanoid.PlatformStand = true
 						bg.Enabled = true
 						bv.Enabled = true
+						humanoid.AutoRotate = false --- to stop the character from moving
+						humanoid.PlatformStand = true
+					
 						plr.Character.PrimaryPart.CFrame = CFrame.lookAt(raycast.Position + (raycast.Normal/2),raycast.Position)
 						local courtaine =	coroutine.create(function() --- couratine so the other stuff will work 
 							repeat
@@ -267,7 +270,6 @@ uis.InputBegan:Connect(function(i,g)
 			char.PrimaryPart.CFrame = char.PrimaryPart.CFrame * CFrame.new(0,10,0)
 		end
 	end
-	
 end)
 
 
